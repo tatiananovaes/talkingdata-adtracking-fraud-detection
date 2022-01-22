@@ -32,6 +32,7 @@
 ########## Pacotes // Packages ##########
 
 library(data.table)
+library(parallel)
 library(caret)
 
 memory.limit(size=90000)
@@ -45,15 +46,15 @@ read_dataset <- function(path_file){
 }
 
 to_factor <- function(dt, feat){
-  dt <- dt[, (feat) := lapply(.SD, as.factor), .SDcols = feat]
-}
+  dt <- dt[, (feat) := mclapply(.SD, as.factor, mc.cores = 1), .SDcols = feat]
+} # mc.cores > 1 is not supported on Windows => 1 para Windows
 
 missing_per_column <- function(dt){
-  sapply(dt, function(x)sum(is.na(x)))
+  unlist(mclapply(dt, function(x)sum(is.na(x), mc.cores = 1))) # REVER
 }
 
 unique_per_column <- function(dt){
-  sapply(dt, function(x) length(unique(x)))
+  unlist(mclapply(dt, function(x) length(unique(x)), mc.cores = 1))
 }
 
 del_column <- function(dt, feat) {
