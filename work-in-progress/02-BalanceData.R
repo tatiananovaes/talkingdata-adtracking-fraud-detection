@@ -9,6 +9,7 @@
 ########## Pacotes // Packages ##########
 
 library(data.table)
+library(parallel)
 library(ROSE)
 
 memory.limit(size=90000)
@@ -21,15 +22,15 @@ read_dataset <- function(path_file){
 }
 
 to_factor <- function(dt, feat){
-  dt <- dt[, (feat) := lapply(.SD, as.factor), .SDcols = feat]
+  dt <- dt[, (feat) := mclapply(.SD, as.factor, mc.cores = 1), .SDcols = feat]
 }
 
 missing_per_column <- function(dt){
-  sapply(dt, function(x)sum(is.na(x)))
+  unlist(mclapply(dt, function(x)sum(is.na(x), mc.cores = 1))) # REVER
 }
 
 unique_per_column <- function(dt){
-  sapply(dt, function(x) length(unique(x)))
+  unlist(mclapply(dt, function(x) length(unique(x)), mc.cores = 1))
 }
 
 del_column <- function(dt, feat) {
@@ -41,8 +42,8 @@ del_column <- function(dt, feat) {
 
 ########## Carga de dados // Reading data files ##########
 
-train_data_imbalanced <- read_dataset("datasets/transformed/train_data.csv")
-str(train_data_imbalanced) # 6 atributos como int
+train_data <- read_dataset("datasets/transformed/train_data.csv")
+str(train_data) # 6 atributos como int
 
 
 ########## Variáveis categóricas // Factor variables ############## 
@@ -50,12 +51,12 @@ str(train_data_imbalanced) # 6 atributos como int
 cols_cat <- c("ip", "app", "device", "os", "channel")
 target <- c("is_attributed")
 
-to_factor(train_data_imbalanced, c(cols_cat, target))
-str(train_data_imbalanced)
+to_factor(train_data, c(cols_cat, target))
+str(train_data)
 
-missing_per_column(train_data_imbalanced) # 0 missing
-
-levels_train <- unique_per_column(train_data_imbalanced) # variáveis categóricas com alta cardinalidade
+missing_per_column(train_data) # 1 missing # CHECAR!!!
+(anyNA(train_data)) # FALSE => ?
+unique_per_column(train_data) # variáveis categóricas com alta cardinalidade
 
 
 
@@ -64,18 +65,18 @@ levels_train <- unique_per_column(train_data_imbalanced) # variáveis categóric
 # Verificando o balanceamento das classes
 # A classe/target está desbalanceada.
 
-round(prop.table(table(train_data_imbalanced$is_attributed)) * 100, digits = 1) # 99.8 x 0,2
+round(prop.table(table(train_data$is_attributed)) * 100, digits = 1) # 99.8 x 0,2
 
 # Representação gráfica do desbalanceamento
 
-barplot(prop.table(table(train_data_imbalanced$is_attributed)), col = "darkred")
+barplot(prop.table(table(train_data$is_attributed)), col = "darkred")
 title(main="Proporção das classes da target", xlab = "Classe", ylab = "Proporção")
 
 
 
 ########## Balanceamento com o método undersampling do pacote ROSE // Balancing with ROSE ##########
 
-train_data_rose <- ovun.sample(is_attributed ~ ., data = train_data_imbalanced, method = "under", seed = 123)$data
+train_data_rose <- ovun.sample(is_attributed ~ ., data = train_data, method = "under", seed = 123)$data
 #?ovun.sample
 
 #View(train_data_rose)
@@ -85,27 +86,101 @@ dim(train_data_rose)
 prop.table(table(train_data_rose$is_attributed))
 
 # 639.209 observações e 7 variáveis
-# 49.98% x 50,02%
+# 49.97% x 50,03%
 
 
 # Representação gráfica dos dados antes e após o balanceamento
 
 par(mfrow = c(1,2))
-barplot(prop.table(table(train_data_imbalanced$is_attributed)), col = "darkred")
-title(main="Proporção das classes da target antes do balanceamento", xlab = "Classe", ylab = "Proporção")
+barplot(prop.table(table(train_data$is_attributed)), col = "darkred")
+title(main="Antes do balanceamento", xlab = "Classe", ylab = "Proporção")
 
 barplot(prop.table(table(train_data_rose$is_attributed)), col = "darkblue")
-title(main="Proporção das classes da target após o balanceamento", xlab = "Classe", ylab = "Proporção")
+title(main="Após o balanceamento", xlab = "Classe", ylab = "Proporção")
 
 ##########
 
-missing_per_column(train_data_rose) # 0 missing
-
-levels_train <- unique_per_column(train_data_rose)
+missing_per_column(train_data_rose) # 1 missing # CHECAR!!!
+(anyNA(train_data_rose)) # FALSE => ?
+unique_per_column(train_data_rose)
 
 ########## Salvando dados balanceados em disco // Saving balanced data file ##########
 fwrite(train_data_rose, file="datasets/transformed/train_data_rose.csv")
 
+rm(train_data_rose)
+
+
 
 ####################### TEST DATA ############################
-# (...)
+
+########## Carga de dados // Reading data files ##########
+
+test_data <- read_dataset("datasets/transformed/test_data.csv")
+str(test_data) # 6 variáveis como int
+
+
+########## Variáveis categóricas // Factor variables ############## 
+
+cols_cat <- c("ip", "app", "device", "os", "channel")
+target <- c("is_attributed")
+
+to_factor(test_data, c(cols_cat, target))
+str(test_data)
+
+missing_per_column(test_data) # 1 missing # CHECAR!!!
+(anyNA(test_data)) # FALSE => ?
+unique_per_column(test_data) # variáveis categóricas com alta cardinalidade
+
+
+
+########## Proporção de classes da target // Imbalanced data ##########
+
+# Verificando o balanceamento das classes
+# A classe/target está desbalanceada.
+
+round(prop.table(table(test_data$is_attributed)) * 100, digits = 1) # 99.8 x 0,2
+
+# Representação gráfica do desbalanceamento
+
+barplot(prop.table(table(test_data$is_attributed)), col = "darkred")
+title(main="Proporção das classes da target", xlab = "Classe", ylab = "Proporção")
+
+
+
+########## Balanceamento com o método undersampling do pacote ROSE // Balancing with ROSE ##########
+
+test_data_rose <- ovun.sample(is_attributed ~ ., data = test_data, method = "under", seed = 123)$data
+#?ovun.sample
+
+#View(test_data_rose)
+class(test_data_rose)
+str(test_data_rose) 
+dim(test_data_rose)
+prop.table(table(test_data_rose$is_attributed))
+
+# 273.945 observações e 7 variáveis
+# 49.97% x 50,03%
+
+
+# Representação gráfica dos dados antes e após o balanceamento
+
+par(mfrow = c(1,2))
+barplot(prop.table(table(test_data$is_attributed)), col = "darkred")
+title(main="Antes do balanceamento", xlab = "Classe", ylab = "Proporção")
+
+barplot(prop.table(table(test_data_rose$is_attributed)), col = "darkblue")
+title(main="Após o balanceamento", xlab = "Classe", ylab = "Proporção")
+
+##########
+
+missing_per_column(test_data_rose) # 1 missing # CHECAR!!!
+(anyNA(test_data_rose)) # FALSE => ? 
+lapply(test_data_rose, function(x)sum(is.na(x))) # com lapply deu 0 missing
+
+
+unique_per_column(test_data_rose) # resultado igual ao lapply
+
+########## Salvando dados balanceados em disco // Saving balanced data file ##########
+fwrite(test_data_rose, file="datasets/transformed/test_data_rose.csv")
+
+
