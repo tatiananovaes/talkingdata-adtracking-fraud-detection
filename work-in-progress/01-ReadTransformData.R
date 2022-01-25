@@ -50,7 +50,7 @@ to_factor <- function(dt, feat){
 } # mc.cores > 1 is not supported on Windows => 1 para Windows
 
 missing_per_column <- function(dt){
-  unlist(mclapply(dt, function(x)sum(is.na(x), mc.cores = 1))) # REVER
+  unlist(mclapply(dt, function(x) sum(is.na(x)), mc.cores = 1))
 }
 
 unique_per_column <- function(dt){
@@ -84,8 +84,7 @@ target <- c("is_attributed")
 to_factor(data, c(cols_cat, target))
 str(data)
 
-
-levels_train <- unique_per_column(data) # variáveis categóricas com alta cardinalidade
+unique_per_column(data) # variáveis categóricas com alta cardinalidade
 
 
 ########## Valores faltantes nos dados de treino // Missing values ##########
@@ -101,7 +100,6 @@ del_column(data, c('attributed_time'))
 
 str(data)
 
-# CHECAR DUPLICADOS?
 
 
 ########## Divisão dos dados em treino e teste // Data split ###############
