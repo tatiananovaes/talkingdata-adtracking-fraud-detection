@@ -10,6 +10,7 @@
 
 library(data.table)
 library(parallel)
+library(dplyr)
 library(ROSE)
 
 memory.limit(size=90000)
@@ -26,7 +27,7 @@ to_factor <- function(dt, feat){
 }
 
 missing_per_column <- function(dt){
-  unlist(mclapply(dt, function(x)sum(is.na(x), mc.cores = 1))) # REVER
+  unlist(mclapply(dt, function(x) sum(is.na(x)), mc.cores = 1))
 }
 
 unique_per_column <- function(dt){
@@ -54,8 +55,8 @@ target <- c("is_attributed")
 to_factor(train_data, c(cols_cat, target))
 str(train_data)
 
-missing_per_column(train_data) # 1 missing # CHECAR!!!
-(anyNA(train_data)) # FALSE => ?
+missing_per_column(train_data) # 0 missing
+#(anyNA(train_data))
 unique_per_column(train_data) # variáveis categóricas com alta cardinalidade
 
 
@@ -67,10 +68,15 @@ unique_per_column(train_data) # variáveis categóricas com alta cardinalidade
 
 round(prop.table(table(train_data$is_attributed)) * 100, digits = 1) # 99.8 x 0,2
 
+tabela_train_prop <- train_data %>% group_by(is_attributed) %>%
+  summarise(Total = length(is_attributed)) %>%
+  mutate(Taxa = Total / sum(Total) * 100)
+print(tabela_train_prop)
+
 # Representação gráfica do desbalanceamento
 
 barplot(prop.table(table(train_data$is_attributed)), col = "darkred")
-title(main="Proporção das classes da target", xlab = "Classe", ylab = "Proporção")
+title(main="Proporção das casses - Dados de Treino", xlab = "Classe", ylab = "Proporção")
 
 
 
@@ -100,14 +106,15 @@ title(main="Após o balanceamento", xlab = "Classe", ylab = "Proporção")
 
 ##########
 
-missing_per_column(train_data_rose) # 1 missing # CHECAR!!!
-(anyNA(train_data_rose)) # FALSE => ?
+missing_per_column(train_data_rose) # 0 missing
+#(anyNA(train_data_rose)) # FALSE
 unique_per_column(train_data_rose)
 
 ########## Salvando dados balanceados em disco // Saving balanced data file ##########
 fwrite(train_data_rose, file="datasets/transformed/train_data_rose.csv")
 
 rm(train_data_rose)
+rm(train_data)
 
 
 
@@ -127,8 +134,8 @@ target <- c("is_attributed")
 to_factor(test_data, c(cols_cat, target))
 str(test_data)
 
-missing_per_column(test_data) # 1 missing # CHECAR!!!
-(anyNA(test_data)) # FALSE => ?
+missing_per_column(test_data) # 0 missing
+#(anyNA(test_data)) # FALSE
 unique_per_column(test_data) # variáveis categóricas com alta cardinalidade
 
 
@@ -140,10 +147,15 @@ unique_per_column(test_data) # variáveis categóricas com alta cardinalidade
 
 round(prop.table(table(test_data$is_attributed)) * 100, digits = 1) # 99.8 x 0,2
 
+tabela_test_prop <- test_data %>% group_by(is_attributed) %>%
+  summarise(Total = length(is_attributed)) %>%
+  mutate(Taxa = Total / sum(Total) * 100)
+print(tabela_train_prop)
+
 # Representação gráfica do desbalanceamento
 
 barplot(prop.table(table(test_data$is_attributed)), col = "darkred")
-title(main="Proporção das classes da target", xlab = "Classe", ylab = "Proporção")
+title(main="Proporção das classes - Dados de Teste", xlab = "Classe", ylab = "Proporção")
 
 
 
@@ -173,12 +185,10 @@ title(main="Após o balanceamento", xlab = "Classe", ylab = "Proporção")
 
 ##########
 
-missing_per_column(test_data_rose) # 1 missing # CHECAR!!!
-(anyNA(test_data_rose)) # FALSE => ? 
-lapply(test_data_rose, function(x)sum(is.na(x))) # com lapply deu 0 missing
+missing_per_column(test_data_rose) # 0 missing
+#(anyNA(test_data_rose)) # FALSE 
 
-
-unique_per_column(test_data_rose) # resultado igual ao lapply
+unique_per_column(test_data_rose)
 
 ########## Salvando dados balanceados em disco // Saving balanced data file ##########
 fwrite(test_data_rose, file="datasets/transformed/test_data_rose.csv")
