@@ -43,20 +43,20 @@ del_column <- function(dt, feat) {
 
 ########## Carga de dados // Reading data files ##########
 
-train_data_final <- read_dataset("datasets/transformed/train_data_feat.csv")
-str(train_data_final)
+train_data <- read_dataset("datasets/transformed/train_data_feat.csv")
+str(train_data)
 
 ########## Variáveis categóricas // Factor variables ############## 
 
 cols_cat <- c("ip", "app", "device", "os", "channel", "day_of_week_click")
 target <- c("is_attributed")
 
-to_factor(train_data_final, c(cols_cat[-1], target))
-str(train_data_final)
+to_factor(train_data, c(cols_cat[-1], target))
+str(train_data)
 
 # Sumário estatístico
 
-summary(train_data_final)
+summary(train_data)
 
 
 ##########   Seleção de Variáveis // Feature Selection ########## 
@@ -64,14 +64,14 @@ summary(train_data_final)
 # Modelo randomForest para criar um plot de importância das variáveis
 
 modelo <- randomForest( is_attributed ~ .,
-                        data = train_data_final, 
+                        data = train_data, 
                         ntree = 100, nodesize = 10, importance = TRUE)
 
 varImpPlot(modelo)
 
 # Variáveis mais relevantes:
-## Método MeanDecreaseAccuracy => hour_click, channel, app, diff_time_click, count_click_by_ip
-## Método MeanDecreaseGini => app, channel, dif_time_clic, count_by_ip, device, os
+## Método MeanDecreaseAccuracy => hour_click, app, channel,diff_time_click, count_click_by_ip
+## Método MeanDecreaseGini => app, channel, diff_time_click, count_click_by_ip, device, os
 
 
 

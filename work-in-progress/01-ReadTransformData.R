@@ -104,7 +104,7 @@ str(data)
 
 ########## Divisão dos dados em treino e teste // Data split ###############
 
-split <- createDataPartition(y = data$is_attributed, p = 0.7, list = FALSE)
+split <- createDataPartition(y = data$is_attributed, p = 0.9, list = FALSE)
 train_data <- data[split,]
 test_data <- data[-split,]
 

@@ -52,7 +52,9 @@ str(train_data) # 6 atributos como int
 cols_cat <- c("ip", "app", "device", "os", "channel")
 target <- c("is_attributed")
 
-to_factor(train_data, c(cols_cat, target))
+# to_factor(train_data, c(cols_cat, target))
+# Apesar de os atributos serem categórios, não serão convertidos em factor para não afetar memória do RStudio.
+to_factor(train_data, target)
 str(train_data)
 
 missing_per_column(train_data) # 0 missing
@@ -76,7 +78,7 @@ print(tabela_train_prop)
 # Representação gráfica do desbalanceamento
 
 barplot(prop.table(table(train_data$is_attributed)), col = "darkred")
-title(main="Proporção das casses - Dados de Treino", xlab = "Classe", ylab = "Proporção")
+title(main="Proporção das Classes - Dados de Treino", xlab = "Classe", ylab = "Proporção")
 
 
 
@@ -91,7 +93,7 @@ str(train_data_rose)
 dim(train_data_rose)
 prop.table(table(train_data_rose$is_attributed))
 
-# 639.209 observações e 7 variáveis
+# 821.957 observações e 7 variáveis (90% train)
 # 49.97% x 50,03%
 
 
@@ -113,84 +115,12 @@ unique_per_column(train_data_rose)
 ########## Salvando dados balanceados em disco // Saving balanced data file ##########
 fwrite(train_data_rose, file="datasets/transformed/train_data_rose.csv")
 
-rm(train_data_rose)
-rm(train_data)
+#rm(train_data_rose)
+#rm(train_data)
 
 
+#################
+## Dados de teste não devem ser balanceados.
 
-####################### TEST DATA ############################
-
-########## Carga de dados // Reading data files ##########
-
-test_data <- read_dataset("datasets/transformed/test_data.csv")
-str(test_data) # 6 variáveis como int
-
-
-########## Variáveis categóricas // Factor variables ############## 
-
-cols_cat <- c("ip", "app", "device", "os", "channel")
-target <- c("is_attributed")
-
-to_factor(test_data, c(cols_cat, target))
-str(test_data)
-
-missing_per_column(test_data) # 0 missing
-#(anyNA(test_data)) # FALSE
-unique_per_column(test_data) # variáveis categóricas com alta cardinalidade
-
-
-
-########## Proporção de classes da target // Imbalanced data ##########
-
-# Verificando o balanceamento das classes
-# A classe/target está desbalanceada.
-
-round(prop.table(table(test_data$is_attributed)) * 100, digits = 1) # 99.8 x 0,2
-
-tabela_test_prop <- test_data %>% group_by(is_attributed) %>%
-  summarise(Total = length(is_attributed)) %>%
-  mutate(Taxa = Total / sum(Total) * 100)
-print(tabela_train_prop)
-
-# Representação gráfica do desbalanceamento
-
-barplot(prop.table(table(test_data$is_attributed)), col = "darkred")
-title(main="Proporção das classes - Dados de Teste", xlab = "Classe", ylab = "Proporção")
-
-
-
-########## Balanceamento com o método undersampling do pacote ROSE // Balancing with ROSE ##########
-
-test_data_rose <- ovun.sample(is_attributed ~ ., data = test_data, method = "under", seed = 123)$data
-#?ovun.sample
-
-#View(test_data_rose)
-class(test_data_rose)
-str(test_data_rose) 
-dim(test_data_rose)
-prop.table(table(test_data_rose$is_attributed))
-
-# 273.945 observações e 7 variáveis
-# 49.97% x 50,03%
-
-
-# Representação gráfica dos dados antes e após o balanceamento
-
-par(mfrow = c(1,2))
-barplot(prop.table(table(test_data$is_attributed)), col = "darkred")
-title(main="Antes do balanceamento", xlab = "Classe", ylab = "Proporção")
-
-barplot(prop.table(table(test_data_rose$is_attributed)), col = "darkblue")
-title(main="Após o balanceamento", xlab = "Classe", ylab = "Proporção")
-
-##########
-
-missing_per_column(test_data_rose) # 0 missing
-#(anyNA(test_data_rose)) # FALSE 
-
-unique_per_column(test_data_rose)
-
-########## Salvando dados balanceados em disco // Saving balanced data file ##########
-fwrite(test_data_rose, file="datasets/transformed/test_data_rose.csv")
 
 

@@ -17,7 +17,7 @@ library(gridExtra)
 library(corrplot)
 
 
-memory.limit(size=90000)
+memory.limit(size=900000)
 
 ############# Funções Auxiliares // Functions #################
 
@@ -147,7 +147,7 @@ rm(train_data_feat)
 
 ########## Carga de dados // Reading data files ##########
 
-test_data_feat <- read_dataset("datasets/transformed/test_data_rose.csv")
+test_data_feat <- read_dataset("datasets/transformed/test_data.csv")
 str(test_data_feat)
 
 
