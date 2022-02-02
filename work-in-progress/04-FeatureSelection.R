@@ -25,6 +25,10 @@ to_factor <- function(dt, feat){
   dt <- dt[, (feat) := mclapply(.SD, as.factor, mc.cores = 1), .SDcols = feat]
 }
 
+to_numeric <- function(dt, feat){
+  dt <- dt[, (feat) := mclapply(.SD, as.numeric, mc.cores = 1), .SDcols = feat]
+}
+
 missing_per_column <- function(dt){
   unlist(mclapply(dt, function(x) sum(is.na(x)), mc.cores = 1))
 }
@@ -44,7 +48,7 @@ del_column <- function(dt, feat) {
 ########## Carga de dados // Reading data files ##########
 
 train_data <- read_dataset("datasets/transformed/train_data_feat.csv")
-str(train_data)
+str(train_data) unique(train_data$is_attributed)
 
 ########## Variáveis categóricas // Factor variables ############## 
 
@@ -52,6 +56,7 @@ cols_cat <- c("ip", "app", "device", "os", "channel", "day_of_week_click")
 target <- c("is_attributed")
 
 to_factor(train_data, c(cols_cat[-1], target))
+to_numeric(train_data, cols_cat[-1])
 str(train_data)
 
 # Sumário estatístico
@@ -69,9 +74,12 @@ modelo <- randomForest( is_attributed ~ .,
 
 varImpPlot(modelo)
 
-# Variáveis mais relevantes:
+# Variáveis mais relevantes: # ANTIGA = COM AGRUPAMENTO 20 CLASSES
 ## Método MeanDecreaseAccuracy => hour_click, app, channel,diff_time_click, count_click_by_ip
 ## Método MeanDecreaseGini => app, channel, diff_time_click, count_click_by_ip, device, os
 
 
+# Variáveis mais relevantes:
+## Método MeanDecreaseAccuracy => hour_click, app, diff_time_click, channel, count_click_by_ip
+## Método MeanDecreaseGini => app, diff_time_click, channel, count_click_by_ip, device, os # adotar essas
 

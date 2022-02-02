@@ -49,6 +49,10 @@ to_factor <- function(dt, feat){
   dt <- dt[, (feat) := mclapply(.SD, as.factor, mc.cores = 1), .SDcols = feat]
 } # mc.cores > 1 is not supported on Windows => 1 para Windows
 
+to_numeric <- function(dt, feat){
+  dt <- dt[, (feat) := mclapply(.SD, as.numeric, mc.cores = 1), .SDcols = feat]
+} # mc.cores > 1 is not supported on Windows => 1 para Windows
+
 missing_per_column <- function(dt){
   unlist(mclapply(dt, function(x) sum(is.na(x)), mc.cores = 1))
 }
@@ -74,6 +78,8 @@ dim(data)
 
 # Dimensões: 184.903.890 registros e 8 variáveis
 # As variáveis ip, app, device, os e channel, além da target is_attributed, foram reconhecidas pelo R como int, mas são categóricas.
+# Como o dataset test do Kaggle não contém a target, o dataset train foi carregado para ser 
+# em seguida divido em treino e teste. E como é muito grande, o split será feito na proporção 90%/10%.
 
 
 ########## Variáveis categóricas // Factor variables ############## 
@@ -82,12 +88,13 @@ cols_cat <- c("ip", "app", "device", "os", "channel")
 target <- c("is_attributed")
 
 to_factor(data, c(cols_cat, target))
+to_numeric(data, cols_cat)
 str(data)
 
 unique_per_column(data) # variáveis categóricas com alta cardinalidade
 
 
-########## Valores faltantes nos dados de treino // Missing values ##########
+########## Valores faltantes // Missing values ##########
 
 #any(is.na(data))
 missing_per_column(data) # 184.447.044 missing de attributed_time
@@ -110,6 +117,7 @@ test_data <- data[-split,]
 
 str(train_data)
 str(test_data)
+
 
 ########## Salvando dados de treino em disco // Saving train data file ##########
 

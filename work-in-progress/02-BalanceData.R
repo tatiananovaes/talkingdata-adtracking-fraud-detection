@@ -25,6 +25,9 @@ read_dataset <- function(path_file){
 to_factor <- function(dt, feat){
   dt <- dt[, (feat) := mclapply(.SD, as.factor, mc.cores = 1), .SDcols = feat]
 }
+to_numeric <- function(dt, feat){
+  dt <- dt[, (feat) := mclapply(.SD, as.numeric, mc.cores = 1), .SDcols = feat]
+}
 
 missing_per_column <- function(dt){
   unlist(mclapply(dt, function(x) sum(is.na(x)), mc.cores = 1))
@@ -45,16 +48,15 @@ del_column <- function(dt, feat) {
 
 train_data <- read_dataset("datasets/transformed/train_data.csv")
 str(train_data) # 6 atributos como int
-
+class(train_data)
 
 ########## Variáveis categóricas // Factor variables ############## 
 
 cols_cat <- c("ip", "app", "device", "os", "channel")
 target <- c("is_attributed")
 
-# to_factor(train_data, c(cols_cat, target))
-# Apesar de os atributos serem categórios, não serão convertidos em factor para não afetar memória do RStudio.
-to_factor(train_data, target)
+to_factor(train_data, c(cols_cat, target))
+to_numeric(data, cols_cat) # ocorreu erro aqui, mas não no script anterior =VERIFICAR
 str(train_data)
 
 missing_per_column(train_data) # 0 missing

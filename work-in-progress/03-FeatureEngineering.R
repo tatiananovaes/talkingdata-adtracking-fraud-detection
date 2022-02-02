@@ -11,13 +11,13 @@
 library(data.table)
 library(parallel)
 library(lubridate)
-library(forcats)
+#library(forcats)
 library(ggplot2)
 library(gridExtra)
 library(corrplot)
 
 
-memory.limit(size=900000)
+memory.limit(size=90000)
 
 ############# Funções Auxiliares // Functions #################
 
@@ -28,6 +28,10 @@ read_dataset <- function(path_file){
 
 to_factor <- function(dt, feat){
   dt <- dt[, (feat) := mclapply(.SD, as.factor, mc.cores = 1), .SDcols = feat]
+}
+
+to_numeric <- function(dt, feat){
+  dt <- dt[, (feat) := mclapply(.SD, as.numeric, mc.cores = 1), .SDcols = feat]
 }
 
 missing_per_column <- function(dt){
@@ -57,6 +61,7 @@ cols_cat <- c("ip", "app", "device", "os", "channel")
 target <- c("is_attributed")
 
 to_factor(train_data_feat, c(cols_cat, target))
+to_numeric(train_data_feat, cols_cat)
 str(train_data_feat)
 
 
@@ -79,20 +84,21 @@ train_data_feat <- train_data_feat[, ':=' (day_of_week_click = wday(ymd_hms(clic
 train_data_feat <-  del_column(train_data_feat, c('ip','click_time'))
 
 to_factor(train_data_feat, c("day_of_week_click"))
+to_numeric(train_data_feat, c("day_of_week_click"))
 
 
 #### Agrupando níveis das variáveis categóricas // Lumping together factor levels
 
-train_data_feat <- train_data_feat[, (cols_cat[-1]) := mclapply(.SD, function(x) fct_lump_n(x, 20), mc.cores = 1), .SDcols = cols_cat[-1]]
+#train_data_feat <- train_data_feat[, (cols_cat[-1]) := mclapply(.SD, function(x) fct_lump_n(x, 20), mc.cores = 1), .SDcols = cols_cat[-1]]
 
-str(train_data_feat)
-unique_per_column(train_data_feat)
+#str(train_data_feat)
+#unique_per_column(train_data_feat)
 
 # Sumário estatístico
 summary(train_data_feat)
 
 
-### Visualizando atributos em relação à target 
+### Visualizando atributos em relação à target # REVER = PERDEU O SENTIDO
 
 g1 <- ggplot(train_data_feat, aes(app, fill=is_attributed)) + geom_bar(position='fill') + scale_fill_manual(values = c("#999999", "#E69F00"))
 g2 <- ggplot(train_data_feat, aes(device, fill=is_attributed)) + geom_bar(position='fill') + scale_fill_manual(values = c("#999999", "#E69F00"))
@@ -157,6 +163,7 @@ cols_cat <- c("ip", "app", "device", "os", "channel")
 target <- c("is_attributed")
 
 to_factor(test_data_feat, c(cols_cat, target))
+to_numeric(test_data_feat, cols_cat)
 str(test_data_feat)
 
 
@@ -181,15 +188,16 @@ test_data_feat <- test_data_feat[, ':=' (day_of_week_click = wday(ymd_hms(click_
 
 test_data_feat <-  del_column(test_data_feat, c('ip','click_time'))
 
-to_factor(test_data_feat, c("day_of_week_click"))
 
+to_factor(test_data_feat, c("day_of_week_click"))
+to_numeric(test_data_feat, c("day_of_week_click"))
 
 #### Agrupando níveis das variáveis categóricas // Lumping together factor levels
 
-test_data_feat <- test_data_feat[, (cols_cat[-1]) := mclapply(.SD, function(x) fct_lump_n(x, 20), mc.cores = 1), .SDcols = cols_cat[-1]]
+#test_data_feat <- test_data_feat[, (cols_cat[-1]) := mclapply(.SD, function(x) fct_lump_n(x, 20), mc.cores = 1), .SDcols = cols_cat[-1]]
 
-str(test_data_feat)
-unique_per_column(test_data_feat)
+#str(test_data_feat)
+#unique_per_column(test_data_feat)
 
 
 ### Normalizando variáveis numéricas
