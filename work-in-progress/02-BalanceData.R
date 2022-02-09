@@ -47,7 +47,7 @@ del_column <- function(dt, feat) {
 ########## Carga de dados // Reading data files ##########
 
 train_data <- read_dataset("datasets/transformed/train_data.csv")
-str(train_data) # 6 atributos como int
+str(train_data) # 5 atributos como int
 class(train_data)
 
 ########## Variáveis categóricas // Factor variables ############## 
@@ -56,11 +56,11 @@ cols_cat <- c("ip", "app", "device", "os", "channel")
 target <- c("is_attributed")
 
 to_factor(train_data, c(cols_cat, target))
-to_numeric(data, cols_cat) # ocorreu erro aqui, mas não no script anterior =VERIFICAR
+to_numeric(train_data, cols_cat)
 str(train_data)
 
 missing_per_column(train_data) # 0 missing
-#(anyNA(train_data))
+
 unique_per_column(train_data) # variáveis categóricas com alta cardinalidade
 
 
@@ -96,7 +96,7 @@ dim(train_data_rose)
 prop.table(table(train_data_rose$is_attributed))
 
 # 821.957 observações e 7 variáveis (90% train)
-# 49.97% x 50,03%
+# 49.98% x 50,02%
 
 
 # Representação gráfica dos dados antes e após o balanceamento
@@ -111,14 +111,11 @@ title(main="Após o balanceamento", xlab = "Classe", ylab = "Proporção")
 ##########
 
 missing_per_column(train_data_rose) # 0 missing
-#(anyNA(train_data_rose)) # FALSE
+
 unique_per_column(train_data_rose)
 
 ########## Salvando dados balanceados em disco // Saving balanced data file ##########
 fwrite(train_data_rose, file="datasets/transformed/train_data_rose.csv")
-
-#rm(train_data_rose)
-#rm(train_data)
 
 
 #################
