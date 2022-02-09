@@ -76,10 +76,11 @@ data <- read_dataset("datasets/train.csv")
 str(data)
 dim(data)
 
-# Dimensões: 184.903.890 registros e 8 variáveis
-# As variáveis ip, app, device, os e channel, além da target is_attributed, foram reconhecidas pelo R como int, mas são categóricas.
-# Como o dataset test do Kaggle não contém a target, o dataset train foi carregado para ser 
-# em seguida divido em treino e teste. E como é muito grande, o split será feito na proporção 90%/10%.
+# Dimensões: 184.903.890 registros e 8 variáveis.
+# As variáveis ip, app, device, os e channel, além da target is_attributed, foram reconhecidas
+# pelo R como int, mas são categóricas.
+# Como o dataset test.csv do Kaggle não contém a target, o dataset train.csv foi carregado para ser 
+# em seguida dividido em treino e teste. E, como é muito grande, o split será feito na proporção 90%/10%.
 
 
 ########## Variáveis categóricas // Factor variables ############## 
@@ -111,6 +112,7 @@ str(data)
 
 ########## Divisão dos dados em treino e teste // Data split ###############
 
+set.seed(1234)
 split <- createDataPartition(y = data$is_attributed, p = 0.9, list = FALSE)
 train_data <- data[split,]
 test_data <- data[-split,]
