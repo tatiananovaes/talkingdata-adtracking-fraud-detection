@@ -11,7 +11,6 @@
 library(data.table)
 library(parallel)
 library(lubridate)
-#library(forcats)
 library(ggplot2)
 library(gridExtra)
 library(corrplot)
@@ -85,27 +84,6 @@ train_data_feat <-  del_column(train_data_feat, c('ip','click_time'))
 
 to_factor(train_data_feat, c("day_of_week_click"))
 to_numeric(train_data_feat, c("day_of_week_click"))
-
-
-#### Agrupando níveis das variáveis categóricas // Lumping together factor levels
-
-#train_data_feat <- train_data_feat[, (cols_cat[-1]) := mclapply(.SD, function(x) fct_lump_n(x, 20), mc.cores = 1), .SDcols = cols_cat[-1]]
-
-#str(train_data_feat)
-#unique_per_column(train_data_feat)
-
-# Sumário estatístico
-summary(train_data_feat)
-
-
-### Visualizando atributos em relação à target # REVER = PERDEU O SENTIDO
-
-g1 <- ggplot(train_data_feat, aes(app, fill=is_attributed)) + geom_bar(position='fill') + scale_fill_manual(values = c("#999999", "#E69F00"))
-g2 <- ggplot(train_data_feat, aes(device, fill=is_attributed)) + geom_bar(position='fill') + scale_fill_manual(values = c("#999999", "#E69F00"))
-g3 <- ggplot(train_data_feat, aes(os, fill=is_attributed)) + geom_bar(position='fill') + scale_fill_manual(values = c("#999999", "#E69F00"))
-g4 <- ggplot(train_data_feat, aes(channel, fill=is_attributed)) + geom_bar(position='fill') + scale_fill_manual(values = c("#999999", "#E69F00"))
-
-grid.arrange(g1, g2, g3, g4, ncol = 2)
 
 
 ### Normalizando variáveis numéricas
@@ -192,13 +170,6 @@ test_data_feat <-  del_column(test_data_feat, c('ip','click_time'))
 to_factor(test_data_feat, c("day_of_week_click"))
 to_numeric(test_data_feat, c("day_of_week_click"))
 
-#### Agrupando níveis das variáveis categóricas // Lumping together factor levels
-
-#test_data_feat <- test_data_feat[, (cols_cat[-1]) := mclapply(.SD, function(x) fct_lump_n(x, 20), mc.cores = 1), .SDcols = cols_cat[-1]]
-
-#str(test_data_feat)
-#unique_per_column(test_data_feat)
-
 
 ### Normalizando variáveis numéricas
 
@@ -208,9 +179,6 @@ test_data_feat <- test_data_feat[, (cols_num) := mclapply(.SD, scale, mc.cores =
 #View(test_data_feat)
 str(test_data_feat)
 missing_per_column(test_data_feat) # 0 missing
-
-# Sumário estatístico
-summary(test_data_feat)
 
 
 # Gravando arquivo com dataset pré-processado
