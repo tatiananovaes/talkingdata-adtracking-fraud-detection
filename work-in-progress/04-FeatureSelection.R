@@ -48,7 +48,8 @@ del_column <- function(dt, feat) {
 ########## Carga de dados // Reading data files ##########
 
 train_data <- read_dataset("datasets/transformed/train_data_feat.csv")
-str(train_data) unique(train_data$is_attributed)
+str(train_data)
+unique(train_data$is_attributed)
 
 ########## Variáveis categóricas // Factor variables ############## 
 
@@ -59,27 +60,20 @@ to_factor(train_data, c(cols_cat[-1], target))
 to_numeric(train_data, cols_cat[-1])
 str(train_data)
 
-# Sumário estatístico
-
-summary(train_data)
-
 
 ##########   Seleção de Variáveis // Feature Selection ########## 
 
 # Modelo randomForest para criar um plot de importância das variáveis
 
+set.seed(1234)
 modelo <- randomForest( is_attributed ~ .,
                         data = train_data, 
                         ntree = 100, nodesize = 10, importance = TRUE)
 
 varImpPlot(modelo)
 
-# Variáveis mais relevantes: # ANTIGA = COM AGRUPAMENTO 20 CLASSES
-## Método MeanDecreaseAccuracy => hour_click, app, channel,diff_time_click, count_click_by_ip
-## Método MeanDecreaseGini => app, channel, diff_time_click, count_click_by_ip, device, os
-
 
 # Variáveis mais relevantes:
 ## Método MeanDecreaseAccuracy => hour_click, app, diff_time_click, channel, count_click_by_ip
-## Método MeanDecreaseGini => app, diff_time_click, channel, count_click_by_ip, device, os # adotar essas
+## Método MeanDecreaseGini => app, diff_time_click, channel, count_click_by_ip, device, os
 
